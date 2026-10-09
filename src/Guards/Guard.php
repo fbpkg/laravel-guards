@@ -1,0 +1,98 @@
+<?php
+
+namespace Fbpkg\Guards\Guards;
+
+use Fbpkg\Guards\Contracts\Driver as DriverContract;
+use Fbpkg\Guards\Drivers\Driver;
+use Fbpkg\Guards\Providers\Provider;
+use Fbpkg\Guards\Sources\Source;
+use Fbpkg\Guards\Support\Config;
+use Fbpkg\Guards\Types\SessionCredentials;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Represents an authentication guard.
+ *
+ * A guard provides a public interface for authentication operations
+ * and delegates their implementation to the configured driver.
+ */
+class Guard
+{
+    /**
+     * The authentication driver used by this guard.
+     */
+    protected DriverContract $driver;
+
+    /**
+     * Create a new authentication guard.
+     *
+     * Resolve the guard configuration and initialize its provider,
+     * credential source, and authentication driver.
+     *
+     * @param string $name The name of the guard.
+     */
+    public function __construct(
+        protected string $name,
+    ) {
+        $config = Config::guard($this->name);
+        $provider = Config::provider($config->provider);
+        $source = Config::source($config->source);
+
+        $this->driver = new Driver(
+            guard: $this->name,
+            config: $config,
+            provider: new Provider($provider),
+            source: new Source($source, request()),
+        );
+    }
+
+    /**
+     * Determine whether the current request is authenticated.
+     */
+    public function check(): bool
+    {
+        return $this->user() !== null;
+    }
+
+    /**
+     * Get the authenticated entity.
+     *
+     * Returns null when the current credentials do not authenticate
+     * a valid entity.
+     */
+    public function user(): ?Model
+    {
+        return $this->driver->authenticatable();
+    }
+
+    /**
+     * Authenticate an entity and issue session credentials.
+     *
+     * @param Model $authenticatable The entity to authenticate.
+     * @param bool $remember Whether to issue a refresh credential.
+     */
+    public function login(
+        Model $authenticatable,
+        bool $remember = false,
+    ): SessionCredentials {
+        return $this->driver->login($authenticatable, $remember);
+    }
+
+    /**
+     * Issue new credentials using the current refresh credential.
+     *
+     * @throws \Fbpkg\Guards\Exceptions\AuthenticationException
+     */
+    public function refresh(): SessionCredentials
+    {
+        return $this->driver->refresh();
+    }
+
+    /**
+     * Invalidate the current authentication session.
+     */
+    public function logout(): void
+    {
+        $this->driver->logout();
+    }
+}
