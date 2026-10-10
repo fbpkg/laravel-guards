@@ -10,15 +10,27 @@ use RuntimeException;
 class AuthenticationException extends RuntimeException
 {
     /**
+     * Create an exception for an unsupported credential type.
+     *
+     * @param string $credential The unsupported credential type.
+     *
+     * @return static Authentication exception.
+     */
+    public static function unsupportedCredentialType(string $credential): static
+    {
+        return new static(
+            "Unsupported credential type [{$credential}].",
+        );
+    }
+
+    /**
      * Create an exception for a missing refresh credential.
      *
      * @return static Authentication exception.
      */
     public static function missingRefreshCredential(): static
     {
-        return new static(
-            'A refresh credential is required.',
-        );
+        return new static('A refresh credential is required.');
     }
 
     /**
@@ -28,21 +40,7 @@ class AuthenticationException extends RuntimeException
      */
     public static function invalidRefreshCredential(): static
     {
-        return new static(
-            'The refresh credential is invalid.',
-        );
-    }
-
-    /**
-     * Create an exception for an expired access credential.
-     *
-     * @return static Authentication exception.
-     */
-    public static function expiredAccessCredential(): static
-    {
-        return new static(
-            'The access credential has expired.',
-        );
+        return new static('The refresh credential is invalid.');
     }
 
     /**
@@ -52,18 +50,19 @@ class AuthenticationException extends RuntimeException
      */
     public static function expiredRefreshCredential(): static
     {
-        return new static(
-            'The refresh credential has expired.',
-        );
+        return new static('The refresh credential has expired.');
     }
 
     /**
-     * Create an exception for a missing authenticatable entity.
+     * Create an exception when the session's authenticatable entity
+     * no longer exists.
      *
      * @return static Authentication exception.
      */
     public static function authenticatableNotFound(): static
     {
-        return new static('The authenticatable entity for the authentication session was not found.');
+        return new static(
+            'The authenticatable entity for the authentication session was not found.',
+        );
     }
 }

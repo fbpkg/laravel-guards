@@ -13,8 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Represents an authentication guard.
  *
- * A guard provides a public interface for authentication operations
- * and delegates their implementation to the configured driver.
+ * Provides a public interface for authentication operations and delegates
+ * their implementation to the configured authentication driver.
  */
 class Guard
 {
@@ -26,7 +26,7 @@ class Guard
     /**
      * Create a new authentication guard.
      *
-     * Resolve the guard configuration and initialize its provider,
+     * Resolves the guard configuration and initializes its provider,
      * credential source, and authentication driver.
      *
      * @param string $name The name of the guard.
@@ -48,6 +48,8 @@ class Guard
 
     /**
      * Determine whether the current request is authenticated.
+     *
+     * @return bool True when an authenticated entity exists.
      */
     public function check(): bool
     {
@@ -55,10 +57,9 @@ class Guard
     }
 
     /**
-     * Get the authenticated entity.
+     * Retrieve the authenticated entity for the current request.
      *
-     * Returns null when the current credentials do not authenticate
-     * a valid entity.
+     * @return Model|null The authenticated entity, or null when unauthenticated.
      */
     public function user(): ?Model
     {
@@ -66,10 +67,25 @@ class Guard
     }
 
     /**
+     * Retrieve the claims from the current JWT access token.
+     *
+     * Returns null when the configured driver is not JWT or the access
+     * token is missing or invalid.
+     *
+     * @return array<string, mixed>|null The JWT claims, or null when unavailable.
+     */
+    public function jwtClaims(): ?array
+    {
+        return $this->driver->jwtClaims();
+    }
+
+    /**
      * Authenticate an entity and issue session credentials.
      *
      * @param Model $authenticatable The entity to authenticate.
      * @param bool $remember Whether to issue a refresh credential.
+     *
+     * @return SessionCredentials The issued authentication credentials.
      */
     public function login(
         Model $authenticatable,
@@ -79,7 +95,9 @@ class Guard
     }
 
     /**
-     * Issue new credentials using the current refresh credential.
+     * Refresh the current authentication credentials.
+     *
+     * @return SessionCredentials The refreshed authentication credentials.
      *
      * @throws \Fbpkg\Guards\Exceptions\AuthenticationException
      */
@@ -90,6 +108,8 @@ class Guard
 
     /**
      * Invalidate the current authentication session.
+     *
+     * @return void
      */
     public function logout(): void
     {

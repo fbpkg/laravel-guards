@@ -18,12 +18,22 @@ interface Driver
     public function authenticatable(): ?Model;
 
     /**
-     * Authenticate the given entity.
+     * Retrieve the claims from the current JWT access token.
      *
-     * @param Model $authenticatable Authenticatable entity.
-     * @param bool  $remember        Whether to issue a refresh credential.
+     * Returns null when the configured driver is not JWT or the access
+     * token is missing or invalid.
      *
-     * @return SessionCredentials Authentication session credentials.
+     * @return array<string, mixed>|null The JWT claims, or null when unavailable.
+     */
+    public function jwtClaims(): ?array;
+
+    /**
+     * Authenticate the given entity and issue session credentials.
+     *
+     * @param Model $authenticatable The entity to authenticate.
+     * @param bool $remember Whether to issue a refresh credential.
+     *
+     * @return SessionCredentials The issued authentication credentials.
      */
     public function login(
         Model $authenticatable,
@@ -33,12 +43,12 @@ interface Driver
     /**
      * Refresh the current authentication credentials.
      *
-     * @return SessionCredentials Refreshed authentication session credentials.
+     * @return SessionCredentials The refreshed authentication credentials.
      */
     public function refresh(): SessionCredentials;
 
     /**
-     * Log out the current authentication session.
+     * Invalidate the current authentication session.
      *
      * @return void
      */
