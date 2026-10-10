@@ -63,8 +63,7 @@ return [
     'guards' => [
         'web' => [
             'provider' => 'users',
-            // 'source' => 'web',
-            'source' => 'spa',
+            'source' => 'web',
         ],
 
         'admin' => [
