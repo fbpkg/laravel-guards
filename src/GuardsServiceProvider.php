@@ -3,6 +3,9 @@
 namespace Fbpkg\Guards;
 
 use Fbpkg\Guards\Guards\GuardManager;
+use Fbpkg\Guards\Middleware\Authenticate;
+use Fbpkg\Guards\Middleware\GuestOnly;
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -28,9 +31,21 @@ class GuardsServiceProvider extends ServiceProvider
     /**
      * Bootstrap package services.
      */
-    public function boot(): void
+    public function boot(Router $router): void
     {
+        $this->registerMiddleware($router);
         $this->registerPublishing();
+    }
+
+    /**
+     * Register package middleware aliases.
+     *
+     * @param Router $router The Laravel router.
+     */
+    protected function registerMiddleware(Router $router): void
+    {
+        $router->aliasMiddleware('guards.auth', Authenticate::class);
+        $router->aliasMiddleware('guards.guest', GuestOnly::class);
     }
 
     /**
