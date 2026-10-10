@@ -6,6 +6,7 @@ use Fbpkg\Guards\Guards\GuardManager;
 use Fbpkg\Guards\Middleware\Authenticate;
 use Fbpkg\Guards\Middleware\GuestOnly;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -34,6 +35,7 @@ class GuardsServiceProvider extends ServiceProvider
     public function boot(Router $router): void
     {
         $this->registerMiddleware($router);
+        $this->registerBladeDirectives();
         $this->registerPublishing();
     }
 
@@ -46,6 +48,20 @@ class GuardsServiceProvider extends ServiceProvider
     {
         $router->aliasMiddleware('guards.auth', Authenticate::class);
         $router->aliasMiddleware('guards.guest', GuestOnly::class);
+    }
+
+    /**
+     * Register package Blade directives.
+     */
+    protected function registerBladeDirectives(): void
+    {
+        Blade::if('guardsAuth', function (string $guard = 'web'): bool {
+            return app('guards')->guard($guard)->check();
+        });
+
+        Blade::if('guardsGuest', function (string $guard = 'web'): bool {
+            return !app('guards')->guard($guard)->check();
+        });
     }
 
     /**
