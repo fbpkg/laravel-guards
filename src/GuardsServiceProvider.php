@@ -30,6 +30,14 @@ class GuardsServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->registerPublishing();
+    }
+
+    /**
+     * Register package publishing resources.
+     */
+    protected function registerPublishing(): void
+    {
         $this->publishes([
             __DIR__ . '/../config/guards.php' => config_path('guards.php'),
         ], 'guards-config');
