@@ -7,6 +7,7 @@ use Fbpkg\Guards\Drivers\Driver;
 use Fbpkg\Guards\Providers\Provider;
 use Fbpkg\Guards\Sources\Source;
 use Fbpkg\Guards\Support\Config;
+use Fbpkg\Guards\Types\Config\Guard as GuardConfig;
 use Fbpkg\Guards\Types\SessionCredentials;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,6 +19,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Guard
 {
+    /**
+     * The resolved configuration for this guard.
+     */
+    protected GuardConfig $config;
+
     /**
      * The authentication driver used by this guard.
      */
@@ -34,13 +40,14 @@ class Guard
     public function __construct(
         protected string $name,
     ) {
-        $config = Config::guard($this->name);
-        $provider = Config::provider($config->provider);
-        $source = Config::source($config->source);
+        $this->config = Config::guard($this->name);
+
+        $provider = Config::provider($this->config->provider);
+        $source = Config::source($this->config->source);
 
         $this->driver = new Driver(
             guard: $this->name,
-            config: $config,
+            config: $this->config,
             provider: new Provider($provider),
             source: new Source($source, request()),
         );
@@ -114,5 +121,25 @@ class Guard
     public function logout(): void
     {
         $this->driver->logout();
+    }
+
+    /**
+     * Get the redirect destination for unauthenticated users.
+     *
+     * @return string The guest redirect path.
+     */
+    public function guestRedirect(): string
+    {
+        return $this->config->redirects->guest;
+    }
+
+    /**
+     * Get the redirect destination for authenticated users.
+     *
+     * @return string The authenticated redirect path.
+     */
+    public function authenticatedRedirect(): string
+    {
+        return $this->config->redirects->authenticated;
     }
 }

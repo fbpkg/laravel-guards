@@ -103,4 +103,24 @@ class GuardManager
     {
         $this->guard()->logout();
     }
+
+    /**
+     * Get the redirect destination for unauthenticated users.
+     *
+     * @return string The guest redirect path.
+     */
+    public function guestRedirect(): string
+    {
+        return $this->guard()->guestRedirect();
+    }
+
+    /**
+     * Get the redirect destination for authenticated users.
+     *
+     * @return string The authenticated redirect path.
+     */
+    public function authenticatedRedirect(): string
+    {
+        return $this->guard()->authenticatedRedirect();
+    }
 }

@@ -28,6 +28,11 @@ return [
 
         'refresh_policy' => 'rolling',
         'refresh_rotation' => true,
+
+        'redirects' => [
+            'guest' => '/login',
+            'authenticated' => '/dashboard',
+        ],
     ],
 
     /*
@@ -70,6 +75,10 @@ return [
             'provider' => 'admins',
             'source' => 'admin',
             'refresh_rotation' => false,
+            'redirects' => [
+                'guest' => '/admin/login',
+                'authenticated' => '/admin',
+            ],
         ],
 
         'spa' => [

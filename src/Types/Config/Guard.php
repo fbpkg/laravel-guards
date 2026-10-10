@@ -20,6 +20,7 @@ namespace Fbpkg\Guards\Types\Config;
  * @property-read int       $activityInterval
  * @property-read string    $refreshPolicy
  * @property-read bool      $refreshRotation
+ * @property-read Redirects $redirects
  */
 final readonly class Guard
 {
@@ -33,6 +34,7 @@ final readonly class Guard
      * @param int       $activityInterval   Minimum interval between activity updates.
      * @param string    $refreshPolicy      Refresh token lifetime policy.
      * @param bool      $refreshRotation    Whether refresh token rotation is enabled.
+     * @param Redirects $redirects          Redirect destinations for this guard.
      */
     public function __construct(
         public string $driver,
@@ -47,5 +49,7 @@ final readonly class Guard
 
         public string $refreshPolicy,
         public bool $refreshRotation,
+
+        public Redirects $redirects,
     ) {}
 }

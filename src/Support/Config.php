@@ -6,6 +6,7 @@ use Fbpkg\Guards\Exceptions\ConfigurationException;
 use Fbpkg\Guards\Types\Config\ApiKey;
 use Fbpkg\Guards\Types\Config\Guard;
 use Fbpkg\Guards\Types\Config\Provider;
+use Fbpkg\Guards\Types\Config\Redirects;
 use Fbpkg\Guards\Types\Config\Source;
 use Illuminate\Database\Eloquent\Model;
 
@@ -165,6 +166,34 @@ class Config
     }
 
     /**
+     * Get the default redirect destinations.
+     *
+     * @return Redirects The default redirect destinations.
+     *
+     * @throws ConfigurationException If the default redirects are invalid.
+     */
+    public static function defaultRedirects(): Redirects
+    {
+        $redirects = self::getDefault('redirects');
+
+        if (
+            !is_array($redirects)
+            || !isset($redirects['guest'], $redirects['authenticated'])
+            || !is_string($redirects['guest'])
+            || !is_string($redirects['authenticated'])
+        ) {
+            throw ConfigurationException::invalid(
+                'The default redirect configuration must contain string values for [guest] and [authenticated].',
+            );
+        }
+
+        return new Redirects(
+            guest: $redirects['guest'],
+            authenticated: $redirects['authenticated'],
+        );
+    }
+
+    /**
      * Resolve the configuration of the given authentication provider.
      *
      * @param string $provider Provider name.
@@ -234,7 +263,7 @@ class Config
      *
      * @return Guard The fully resolved guard configuration.
      *
-     * @throws ConfigurationException
+     * @throws ConfigurationException If the guard or its configuration is invalid.
      */
     public static function guard(string $guard): Guard
     {
@@ -245,6 +274,20 @@ class Config
         }
 
         $config = $guards[$guard];
+
+        $defaultRedirects = self::defaultRedirects();
+        $guardRedirects = $config['redirects'] ?? [];
+
+        if (!is_array($guardRedirects)) {
+            throw ConfigurationException::invalid(
+                "The redirect configuration for guard [{$guard}] must be an array.",
+            );
+        }
+
+        $redirects = new Redirects(
+            guest: $guardRedirects['guest'] ?? $defaultRedirects->guest,
+            authenticated: $guardRedirects['authenticated'] ?? $defaultRedirects->authenticated,
+        );
 
         return new Guard(
             driver: $config['driver'] ?? self::defaultDriver(),
@@ -267,6 +310,8 @@ class Config
 
             refreshRotation: $config['refresh_rotation']
                 ?? self::defaultRefreshRotation(),
+
+            redirects: $redirects,
         );
     }
 
